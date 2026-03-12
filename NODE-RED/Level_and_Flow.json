@@ -1,0 +1,1119 @@
+[
+    {
+        "id": "52f15ecb0eb0452e",
+        "type": "tab",
+        "label": "Level and Flow",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "ba561df670599cbb",
+        "type": "group",
+        "z": "52f15ecb0eb0452e",
+        "style": {
+            "stroke": "#999999",
+            "stroke-opacity": "1",
+            "fill": "none",
+            "fill-opacity": "1",
+            "label": true,
+            "label-position": "nw",
+            "color": "#a4a4a4"
+        },
+        "nodes": [],
+        "x": 94,
+        "y": 59,
+        "w": 40,
+        "h": 40
+    },
+    {
+        "id": "a512a9a4858b0cf4",
+        "type": "group",
+        "z": "52f15ecb0eb0452e",
+        "style": {
+            "stroke": "#999999",
+            "stroke-opacity": "1",
+            "fill": "none",
+            "fill-opacity": "1",
+            "label": true,
+            "label-position": "nw",
+            "color": "#a4a4a4"
+        },
+        "nodes": [
+            "45bdcd23ea6e26c3",
+            "e50f8538e1945445"
+        ],
+        "x": 454,
+        "y": 119,
+        "w": 752,
+        "h": 122
+    },
+    {
+        "id": "62f287e459c16f57",
+        "type": "mqtt in",
+        "z": "52f15ecb0eb0452e",
+        "name": "Dato recibido",
+        "topic": "analogico",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "f2dc9e84c382e756",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 290,
+        "y": 400,
+        "wires": [
+            [
+                "32343fa29e08644b",
+                "7b7e4b9ef8198ddb"
+            ]
+        ]
+    },
+    {
+        "id": "32343fa29e08644b",
+        "type": "debug",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 490,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "15e8132c0ffec18c",
+        "type": "function",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "func": "// Arma cadena con Flujo y Nivel\nvar flujo = flow.get(\"flujov\");      // en L/s\nvar nivel = flow.get(\"nivel_cm\");    // en cm\nvar valor = flow.get(\"valor\");       // contador\n\n// Construir mensaje con dos líneas\nvar cadena = \"Valor de Flujo: \" + flujo.toFixed(1) + \" l/s\\n\" +\n             \"Nivel de agua: \" + nivel.toFixed(1) + \" cm\";\n\nvar activador = flow.get(\"activador\");\n\nif (activador === true) {\n    msg.payload = {\n        chatId: 1242591758,   // tu chat ID\n        type: \"message\",\n        content: cadena.toString()\n    }\n    return msg;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1120,
+        "y": 580,
+        "wires": [
+            [
+                "18aa4b14a6468aa4",
+                "de47d42c4460ecee"
+            ]
+        ]
+    },
+    {
+        "id": "7b7e4b9ef8198ddb",
+        "type": "function",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "func": "// Convierte a número\nmsg.payload = msg.payload * 1;\n\n// Nivel en cm\nlet H_cm = msg.payload;\n\n// Convierte a metros\nlet H_m = H_cm / 100;\n\n// L constante (m)\nlet L = 1.8;\n\n// Calcula Q en m³/s\nlet Q_m3s = 1.84 * L * Math.pow(H_m, 1.5);\n\n// Convierte a L/s\nlet Q_lps = Q_m3s * 1000;\n\n// Contador Valor\nlet valor = flow.get(\"valor\") || 0;\nvalor = valor + 1;\nflow.set(\"valor\", valor);\n\n// Guarda en variables de flujo con 1 decimal\nflow.set(\"nivel_cm\", Number(H_cm.toFixed(1)));\nflow.set(\"flujov\",  Number(Q_lps.toFixed(1)));\n\n// Prepara para Google Form (también con 1 decimal)\nmsg.payload1 = valor;\nmsg.payload2 = Number(H_cm.toFixed(1));\nmsg.payload3 = Number(Q_lps.toFixed(1));\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 400,
+        "wires": [
+            [
+                "496d7df9c0455ae6",
+                "542176f25e585926",
+                "704febb6f970fd52",
+                "e4f4b6dfce3e4852",
+                "f576e383f5eab592"
+            ]
+        ]
+    },
+    {
+        "id": "542176f25e585926",
+        "type": "delay",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "pauseType": "queue",
+        "timeout": "1",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "10",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 780,
+        "y": 500,
+        "wires": [
+            [
+                "15e8132c0ffec18c",
+                "728df4f9db3aaf94",
+                "8b4163b7f54566d1",
+                "7fe07752d5c1455d",
+                "6f268ed2ada70afe",
+                "130963a8de4393cc"
+            ]
+        ]
+    },
+    {
+        "id": "b4e445559f4e9467",
+        "type": "debug",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 920,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "323b4c6b1abd4b9e",
+        "type": "change",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.content",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 520,
+        "y": 580,
+        "wires": [
+            [
+                "9d9a5b5614a1c0a4",
+                "7e41ee7512c4a61c"
+            ]
+        ]
+    },
+    {
+        "id": "9d9a5b5614a1c0a4",
+        "type": "debug",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 720,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "7e41ee7512c4a61c",
+        "type": "function",
+        "z": "52f15ecb0eb0452e",
+        "name": "Recibe Manual",
+        "func": "flow.set(\"activar\",msg.payload);\nvar en = flow.get(\"activar\");\n//var boolen = false;\n\nif(en == \"Recibir\")\n{\n    boolen = true;    \n\n}\nif(en == \"Cancelar\")\n{\n    boolen = false;\n}\nflow.set(\"activador\",boolen);\nmsg.payload = boolen;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 4,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 730,
+        "y": 620,
+        "wires": [
+            [
+                "b4e445559f4e9467",
+                "15e8132c0ffec18c"
+            ]
+        ]
+    },
+    {
+        "id": "18aa4b14a6468aa4",
+        "type": "debug",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1310,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "6078d5fec0308efa",
+        "type": "function",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "func": "let tableData = flow.get(\"savedData\") || [];\n\n// Lee lo calculado\nlet valor   = flow.get(\"savedCount\");\nlet nivel   = flow.get(\"nivel_cm\");\nlet flujo   = flow.get(\"flujov\");\nlet fecha   = flow.get(\"fecha\");\nlet hora    = flow.get(\"hora\");\n\n// Fallback: si por alguna razón 'fecha' no está, la generamos aquí\nif (!fecha) {\n  const now = new Date();\n  const pad = n => (n < 10 ? \"0\" : \"\") + n;\n  fecha = `${pad(now.getDate())}.${pad(now.getMonth()+1)}.${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;\n  hora  = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;\n  flow.set(\"fecha\", fecha);\n  flow.set(\"hora\", hora);\n}\n\n// Inserta al inicio\ntableData.unshift({\n  \"Nº\"          : valor,   // = Valor\n  \"Fecha\"       : fecha,   // = Fecha/Hora\n  \"Nivel (cm)\"  : nivel,\n  \"Flujo (l/s)\" : flujo,\n  \"Hora\"        : hora\n});\n\n// (opcional) limita filas\n// if (tableData.length > 200) tableData.pop();\n\nmsg.payload = tableData;\nflow.set(\"savedData\", tableData);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1500,
+        "y": 460,
+        "wires": [
+            [
+                "000da474255f6070",
+                "ceed05d9c6d14895"
+            ]
+        ]
+    },
+    {
+        "id": "728df4f9db3aaf94",
+        "type": "function",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "func": "var bool = flow.get(\"resetear\");\n\nif (bool === true) {\n    var myCount = 0;\n    flow.set('savedCount', myCount);\n    flow.set(\"resetear\", false);   // apaga la bandera\n    // No retornes nada especial aquí; el siguiente dato real empezará en 1\n}\n\n// Si el mensaje trae payload válido, incrementar\nif (msg.payload) {\n    var myCount = flow.get('savedCount') || 0;\n    myCount++;\n    flow.set('savedCount', myCount);\n\n    msg.savedCount = myCount;   // opcional, por si lo usas\n    return msg;\n}\n\nreturn null;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 1,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1120,
+        "y": 420,
+        "wires": [
+            [
+                "2ff30453da4583a1"
+            ]
+        ]
+    },
+    {
+        "id": "2ff30453da4583a1",
+        "type": "debug",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1350,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "fa924b07595ec2da",
+        "type": "function",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "func": "// Antes se tenía flow.set(\"fecha\", msg.payload);\nflow.set(\"fecha\", String(msg.payload));      // guarda la fecha completa\n\n// Saca la hora (segunda parte separada por espacio)\nlet s = String(msg.payload);                 // ej: \"21.09.2025 16:36\"\nlet hora = (s.split(\" \")[1] || \"\").trim();   // \"16:36\"\n\n// Si viene sin segundos, añádelos\nif (hora && hora.length === 5) hora = hora + \":00\";  // \"16:36:00\"\n\nflow.set(\"hora\", hora);                      // guarda solo la hora\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1360,
+        "y": 460,
+        "wires": [
+            [
+                "6078d5fec0308efa"
+            ]
+        ]
+    },
+    {
+        "id": "dfa9fa18856a0bba",
+        "type": "file",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "filename": "C:\\\\Users\\\\DELL\\\\OneDrive\\\\Desktop\\\\Datos\\\\reporte.txt",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 1440,
+        "y": 680,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8b4163b7f54566d1",
+        "type": "function",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "func": "if (flow.get(\"rep\") === true) {\n  // Contador propio para el archivo\n  let fileCount = (flow.get(\"fileCount\") || 0) + 1;\n  flow.set(\"fileCount\", fileCount);\n\n  // Lee valores (ya los tienes con 1 decimal en la función principal)\n  let fecha = flow.get(\"fecha\");\n  let hora  = flow.get(\"hora\");\n  let nivel = flow.get(\"nivel_cm\");\n  let flujo = flow.get(\"flujov\");\n\n  // Fallback por si faltan fecha/hora\n  const pad = n => (n < 10 ? \"0\" : \"\") + n;\n  if (!fecha || !hora) {\n    const now = new Date();\n    if (!fecha) fecha = `${pad(now.getDate())}.${pad(now.getMonth()+1)}.${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;\n    if (!hora)  hora  = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;\n  }\n\n  // Asegura 1 decimal en el archivo (por si acaso)\n  const n1 = (typeof nivel === \"number\") ? nivel.toFixed(1) : \"\";\n  const q1 = (typeof flujo === \"number\") ? flujo.toFixed(1) : \"\";\n\n  // CSV final (SIN \\n si el Write file añade newline)\n  msg.payload = `${fileCount},${fecha},${n1},${q1},${hora}`;\n  return msg;\n}\nreturn null;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1120,
+        "y": 640,
+        "wires": [
+            [
+                "dfa9fa18856a0bba"
+            ]
+        ]
+    },
+    {
+        "id": "d9e1814ca2b3f903",
+        "type": "function",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "func": "var rep = flow.get(\"rep\");\nif (rep === true) {\n  // Evita duplicar cabecera\n  if (flow.get(\"header_written\") !== true) {\n    flow.set(\"header_written\", true);\n    msg.payload = \"Valor,Fecha/Hora,Nivel (cm),Flujo (l/s),Hora\"; // SIN \\n\n    return msg;\n  }\n}\nreturn null;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1120,
+        "y": 700,
+        "wires": [
+            [
+                "dfa9fa18856a0bba",
+                "d1e582bb9f41be5b"
+            ]
+        ]
+    },
+    {
+        "id": "33aa1dccbde94ddb",
+        "type": "function",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "func": "flow.set(\"rep\",msg.payload); \nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 920,
+        "y": 680,
+        "wires": [
+            [
+                "d9e1814ca2b3f903",
+                "5ad022dca67d3942"
+            ]
+        ]
+    },
+    {
+        "id": "ca4bec77910d1d71",
+        "type": "function",
+        "z": "52f15ecb0eb0452e",
+        "name": "Resetear (limpia charts)",
+        "func": "// Marca bandera de reset (si la usas en otra parte)\nflow.set(\"resetear\", true);\n\n// Reinicia estado guardado\nflow.set('savedCount', 0);\nflow.set('nivel_cm', null);\nflow.set('flujov', null);\nflow.set('fecha', null);\nflow.set('hora', null);\nflow.set('savedData', []);\nflow.set('header_written', false);\nflow.set('fileCount', 0);\n\n// Salida 1 -> ui_chart Flujo (limpiar serie)\nconst msgFlujo = { topic: \"Flujo (L/s)\", payload: [] };\n\n// Salida 2 -> ui_chart Nivel (limpiar serie)\nconst msgNivel = { topic: \"Nivel (cm)\",  payload: [] };\n\nreturn [ msgFlujo, msgNivel ];\n",
+        "outputs": 2,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 280,
+        "wires": [
+            [
+                "70578e16f934920e"
+            ],
+            [
+                "897e7d18b96eee2d"
+            ]
+        ]
+    },
+    {
+        "id": "6f268ed2ada70afe",
+        "type": "function",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "func": "// Recupera valores del flow\nlet valor = flow.get(\"savedCount\");   // Valor\nlet fecha = flow.get(\"fecha\");        // Fecha/Hora\nlet nivel = flow.get(\"nivel_cm\");     // Nivel (cm)\nlet flujo = flow.get(\"flujov\");       // Flujo (l/s)\nlet hora  = flow.get(\"hora\");         // Hora sola\n\n// Fallbacks por seguridad\nif (!fecha) {\n  const now = new Date();\n  const pad = n => (n < 10 ? \"0\" : \"\") + n;\n  fecha = `${pad(now.getDate())}.${pad(now.getMonth()+1)}.${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;\n}\nif (!hora && fecha.includes(\" \")) {\n  hora = fecha.split(\" \")[1];\n}\n\n// Redondeo flujo a 3 decimales\nif (Number.isFinite(flujo)) flujo = Math.round(flujo * 1000) / 1000;\n\n// Prepara variables para Google Form\nmsg.payload1 = valor;   // entry.363148659\nmsg.payload2 = fecha;   // entry.1630146957\nmsg.payload3 = nivel;   // entry.321472480\nmsg.payload4 = flujo;   // entry.1314320949\nmsg.payload5 = hora;    // entry.1043240112\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1120,
+        "y": 500,
+        "wires": [
+            [
+                "e8299abffb5535cc"
+            ]
+        ]
+    },
+    {
+        "id": "e8299abffb5535cc",
+        "type": "http request",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "https://docs.google.com/forms/d/e/1FAIpQLSe4QGQARlVMnJQ1rSs9DJhcu0iMbPQNxgYJJBvmSKZEGGFS2Q/formResponse?entry.363148659={{payload1}}&entry.1630146957={{payload2}}&entry.321472480={{payload3}}&entry.1314320949={{payload4}}&entry.1043240112={{payload5}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1270,
+        "y": 500,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ceed05d9c6d14895",
+        "type": "debug",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1650,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "f576e383f5eab592",
+        "type": "function",
+        "z": "52f15ecb0eb0452e",
+        "name": "function 1",
+        "func": "// Si viene un reset, limpia el chart\nif (msg.reset === true) {\n  return { topic: \"Flujo (L/s)\", payload: [] };\n}\n\n// Caso normal\nmsg.topic = \"Flujo (L/s)\";\nmsg.payload = (msg.payload3 !== undefined) ? msg.payload3 : flow.get(\"flujov\");\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 400,
+        "wires": [
+            [
+                "70578e16f934920e"
+            ]
+        ]
+    },
+    {
+        "id": "e4f4b6dfce3e4852",
+        "type": "function",
+        "z": "52f15ecb0eb0452e",
+        "name": "function 2",
+        "func": "// Si viene un reset, limpia el chart\nif (msg.reset === true) {\n  return { topic: \"Nivel (cm)\", payload: [] };\n}\n\n// Caso normal\nmsg.topic = \"Nivel (cm)\";\nmsg.payload = (msg.payload2 !== undefined) ? msg.payload2 : flow.get(\"nivel_cm\");\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 440,
+        "wires": [
+            [
+                "897e7d18b96eee2d"
+            ]
+        ]
+    },
+    {
+        "id": "d1e582bb9f41be5b",
+        "type": "debug",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1310,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "5ad022dca67d3942",
+        "type": "debug",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1110,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "04f63386e1c27e97",
+        "type": "ui_button",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "group": "f6ee50e53b053773",
+        "order": 12,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Resetear",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "topic": "resetear",
+        "topicType": "flow",
+        "x": 520,
+        "y": 280,
+        "wires": [
+            [
+                "ca4bec77910d1d71"
+            ]
+        ]
+    },
+    {
+        "id": "04035d76c7c3370b",
+        "type": "ui_switch",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "label": "Guardar reporte",
+        "tooltip": "",
+        "group": "f6ee50e53b053773",
+        "order": 10,
+        "width": "6",
+        "height": "1",
+        "passthru": true,
+        "decouple": "false",
+        "topic": "topic",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "true",
+        "onvalueType": "bool",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "false",
+        "offvalueType": "bool",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 720,
+        "y": 680,
+        "wires": [
+            [
+                "33aa1dccbde94ddb",
+                "4e74dbc3f36237bf"
+            ]
+        ]
+    },
+    {
+        "id": "496d7df9c0455ae6",
+        "type": "ui_text",
+        "z": "52f15ecb0eb0452e",
+        "group": "f6ee50e53b053773",
+        "order": 13,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Flujo Actual (l/s):    ",
+        "format": "{{msg.payload3}}",
+        "layout": "row-center",
+        "className": "",
+        "x": 730,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "45bdcd23ea6e26c3",
+        "type": "ui_text",
+        "z": "52f15ecb0eb0452e",
+        "g": "a512a9a4858b0cf4",
+        "group": "f6ee50e53b053773",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Sistema IoT con Visión Artificial para Monitoreo de Nivel y Caudal de Agua en Canales Comunitarios",
+        "format": "{{msg.payload}}",
+        "layout": "row-center",
+        "className": "",
+        "x": 830,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "e50f8538e1945445",
+        "type": "ui_text",
+        "z": "52f15ecb0eb0452e",
+        "g": "a512a9a4858b0cf4",
+        "group": "f6ee50e53b053773",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Universidad Tecnológica Israel",
+        "format": "{{msg.payload}}",
+        "layout": "row-center",
+        "className": "",
+        "x": 850,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "704febb6f970fd52",
+        "type": "ui_text",
+        "z": "52f15ecb0eb0452e",
+        "group": "f6ee50e53b053773",
+        "order": 13,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Nivel Actual (cm):    ",
+        "format": "{{msg.payload2}}",
+        "layout": "row-center",
+        "className": "",
+        "x": 730,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "70578e16f934920e",
+        "type": "ui_chart",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "group": "c5ef3945c30e96d1",
+        "order": 2,
+        "width": "0",
+        "height": "0",
+        "label": "Tendencia de Flujo",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "10",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1050,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "897e7d18b96eee2d",
+        "type": "ui_chart",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "group": "c5ef3945c30e96d1",
+        "order": 2,
+        "width": "0",
+        "height": "0",
+        "label": "Tendencia de Nivel",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "10",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#c96a18",
+            "#2ca02c",
+            "#98df8a",
+            "#a60808",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1050,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "de47d42c4460ecee",
+        "type": "telegram sender",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "bot": "028539724e57745a",
+        "haserroroutput": false,
+        "outputs": 1,
+        "x": 1330,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "000da474255f6070",
+        "type": "ui_table",
+        "z": "52f15ecb0eb0452e",
+        "group": "c5ef3945c30e96d1",
+        "name": "Histórico de Flujo",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "columns": [
+            {
+                "field": "Nº",
+                "title": "Valor",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "Fecha",
+                "title": "Fecha/Hora",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "Nivel (cm)",
+                "title": "Nivel (cm)",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "Flujo (l/s)",
+                "title": "Flujo (l/s)",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "Hora",
+                "title": "Hora",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            }
+        ],
+        "outputs": 0,
+        "cts": false,
+        "x": 1670,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "7fe07752d5c1455d",
+        "type": "date-converter",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "topic": "",
+        "input": "rate",
+        "inputType": "msg",
+        "inTz": "America/Guayaquil",
+        "adjAmount": 0,
+        "adjType": "days",
+        "adjDir": "add",
+        "format": "DD.MM.YYYY HH:mm",
+        "locale": "de_DE",
+        "output": "",
+        "outputType": "msg",
+        "outTz": "America/Guayaquil",
+        "x": 1160,
+        "y": 460,
+        "wires": [
+            [
+                "fa924b07595ec2da"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "4e74dbc3f36237bf",
+        "type": "ui_led",
+        "z": "52f15ecb0eb0452e",
+        "order": 11,
+        "group": "f6ee50e53b053773",
+        "width": 0,
+        "height": 0,
+        "label": "",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "false",
+                "valueType": "bool"
+            },
+            {
+                "color": "#008000",
+                "value": "true",
+                "valueType": "bool"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "",
+        "x": 910,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "130963a8de4393cc",
+        "type": "function",
+        "z": "52f15ecb0eb0452e",
+        "name": "function 3",
+        "func": "// ---- Node-RED Function: Power BI Streaming (array JSON) ----\n\n// Lee variables de tu flow\nlet valor = flow.get(\"savedCount\") || 0;\nlet fecha = flow.get(\"fecha\");            // \"DD.MM.YYYY HH:mm:ss\"\nlet nivel = flow.get(\"nivel_cm\");\nlet flujo = flow.get(\"flujov\");\nlet hora  = flow.get(\"hora\");\n\n// Fallbacks y formatos\nconst pad = n => (n < 10 ? \"0\" : \"\") + n;\nif (!fecha) {\n  const now = new Date();\n  fecha = `${pad(now.getDate())}.${pad(now.getMonth()+1)}.${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;\n}\nif (!hora && String(fecha).includes(\" \")) hora = String(fecha).split(\" \")[1];\n\n// Convierte \"DD.MM.YYYY HH:mm:ss\" a ISO-8601 con -05:00\nlet iso;\ntry {\n  const [dpart, tpartRaw] = String(fecha).split(\" \");\n  const [dd, mm, yyyy] = dpart.split(\".\");\n  const tpart = (tpartRaw || \"00:00:00\").length === 5 ? `${tpartRaw}:00` : (tpartRaw || \"00:00:00\");\n  iso = `${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}T${tpart}-05:00`;\n} catch (e) {\n  iso = new Date().toISOString();\n}\n\n// Asegura tipos numéricos\nnivel = Number.isFinite(nivel) ? Number(nivel) : null;\nflujo = Number.isFinite(flujo) ? Number(flujo) : null;\n\n// Los nombres de campos DEBEN coincidir 1:1 con tu schema en Power BI\nconst row = {\n  Valor: valor,\n  FechaHora: iso,      // tipo DateTime en tu dataset\n  Nivel_cm: nivel,     // Number\n  Flujo_lps: flujo,    // Number\n  Hora: hora || \"\"     // Text\n};\n\n// Importante: array JSON sin \"rows\"\nmsg.headers = { \"Content-Type\": \"application/json\" };\nmsg.payload = JSON.stringify([ row ]);\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1120,
+        "y": 540,
+        "wires": [
+            [
+                "22af7f54651df18c"
+            ]
+        ]
+    },
+    {
+        "id": "22af7f54651df18c",
+        "type": "http request",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "https://api.powerbi.com/beta/1f99bb00-d24b-4193-8c35-de3c556c30b3/datasets/48b00ebe-b4e1-4fa3-be0e-c8b4f7ad5ec0/rows?redirectedFromSignup=1%2C1&experience=power-bi&key=De1mW7IezaMRkW8Te1oTUmiIjKhtgh%2BiPm0A8e2KcbOtdwedr%2BLqMRBDfF30Q1Yx9prhz2ro%2BYfmCv53%2FrjV5w%3D%3D",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1270,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8df693d429907d42",
+        "type": "telegram receiver",
+        "z": "52f15ecb0eb0452e",
+        "name": "",
+        "bot": "028539724e57745a",
+        "saveDataDir": "",
+        "filterCommands": false,
+        "x": 310,
+        "y": 580,
+        "wires": [
+            [
+                "323b4c6b1abd4b9e"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "ac05bb721e7d166c",
+        "type": "ui_spacer",
+        "z": "52f15ecb0eb0452e",
+        "name": "spacer",
+        "group": "f6ee50e53b053773",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "e6f8cb45abbc1ea2",
+        "type": "ui_spacer",
+        "z": "52f15ecb0eb0452e",
+        "name": "spacer",
+        "group": "f6ee50e53b053773",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "c83215b577b12ea6",
+        "type": "ui_spacer",
+        "z": "52f15ecb0eb0452e",
+        "name": "spacer",
+        "group": "f6ee50e53b053773",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "f2dc9e84c382e756",
+        "type": "mqtt-broker",
+        "name": "Entrada X",
+        "broker": "192.168.100.5",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "f6ee50e53b053773",
+        "type": "ui_group",
+        "name": "INFORMACIÓN",
+        "tab": "cb39246c8d72e491",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "c5ef3945c30e96d1",
+        "type": "ui_group",
+        "name": "TENDENCIAS",
+        "tab": "cb39246c8d72e491",
+        "order": 2,
+        "disp": true,
+        "width": "14",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "028539724e57745a",
+        "type": "telegram bot",
+        "botname": "vision_artificial",
+        "usernames": "",
+        "chatids": "",
+        "baseapiurl": "",
+        "updatemode": "polling",
+        "pollinterval": "300",
+        "usesocks": false,
+        "sockshost": "",
+        "socksport": "6667",
+        "socksusername": "anonymous",
+        "sockspassword": "",
+        "bothost": "",
+        "botpath": "",
+        "localbotport": "8443",
+        "publicbotport": "8443",
+        "privatekey": "",
+        "certificate": "",
+        "useselfsignedcertificate": false,
+        "sslterminated": false,
+        "verboselogging": false
+    },
+    {
+        "id": "cb39246c8d72e491",
+        "type": "ui_tab",
+        "name": "Industria 4.0",
+        "icon": "dashboard",
+        "order": 3,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "6ecc77fe4b3d5fc2",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.1.7",
+            "node-red-contrib-telegrambot": "11.3.0",
+            "node-red-node-ui-table": "0.3.12",
+            "node-red-contrib-date-converter": "0.0.3",
+            "node-red-contrib-ui-led": "0.4.11"
+        }
+    }
+]
